@@ -285,6 +285,62 @@ export default function CreatePage() {
     <>
       <ScrollView className="flex-1 bg-white p-4" scrollEnabled={!isSubmitting}>
         <View className="gap-6 mb-10">
+          <View className="gap-4">
+            <Text className="text-sm font-medium text-gray-700 mb-2">
+              Add Images
+            </Text>
+            <View className="flex-row gap-4 flex-wrap">
+              {["image_1", "image_2"].map((fieldName, index) => (
+                <View key={fieldName} className="w-[150px] h-[150px]">
+                  <Card className="border-dashed border-2 p-0 border-gray-300 w-full h-full flex">
+                    <View className="flex-1">
+                      {watch(fieldName as "image_1" | "image_2")?.uri ? (
+                        <Pressable
+                          onPress={() =>
+                            openImagePreview(
+                              watch(fieldName as "image_1" | "image_2")?.uri ||
+                                ""
+                            )
+                          }
+                          className="w-full h-full"
+                        >
+                          <Image
+                            source={{
+                              uri: watch(fieldName as "image_1" | "image_2")
+                                ?.uri,
+                            }}
+                            className="w-full h-full rounded-lg"
+                            resizeMode="cover"
+                          />
+                        </Pressable>
+                      ) : (
+                        <Pressable
+                          onPress={() =>
+                            pickImage(fieldName as "image_1" | "image_2")
+                          }
+                          className="w-full h-full"
+                        >
+                          <View className="w-full h-full items-center justify-center">
+                            <Text className="text-gray-500 text-2xl">+</Text>
+                          </View>
+                        </Pressable>
+                      )}
+                    </View>
+                    {watch(fieldName as "image_1" | "image_2")?.uri && (
+                      <Pressable
+                        onPress={() =>
+                          removeImage(fieldName as "image_1" | "image_2")
+                        }
+                        className="absolute top-1 right-1 h-6 w-6 bg-red-500 rounded-full items-center justify-center z-10"
+                      >
+                        <Text className="text-white">×</Text>
+                      </Pressable>
+                    )}
+                  </Card>
+                </View>
+              ))}
+            </View>
+          </View>
           <View
             className="gap-4"
             pointerEvents={isSubmitting ? "none" : "auto"}
@@ -397,71 +453,6 @@ export default function CreatePage() {
                 </View>
               )}
             />
-
-            <View className="gap-4">
-              <Text className="text-sm font-medium text-gray-700">
-                Add Images
-              </Text>
-              <View className="flex-row gap-4">
-                {["image_1", "image_2"].map((fieldName, index) => (
-                  <Card
-                    key={fieldName}
-                    className="border-dashed border-2 p-0 w-[150px] border-gray-300"
-                  >
-                    <CardHeader className="p-0">
-                      <CardTitle>
-                        {watch(fieldName as "image_1" | "image_2")?.uri ? (
-                          <Pressable
-                            onPress={() =>
-                              openImagePreview(
-                                watch(fieldName as "image_1" | "image_2")
-                                  ?.uri || ""
-                              )
-                            }
-                          >
-                            <View style={{ width: 150, height: 150 }}>
-                              <Image
-                                source={{
-                                  uri: watch(fieldName as "image_1" | "image_2")
-                                    ?.uri,
-                                }}
-                                style={{ width: 150, height: 150 }}
-                                className="rounded-lg"
-                                resizeMode="cover"
-                              />
-                            </View>
-                          </Pressable>
-                        ) : (
-                          <Pressable
-                            onPress={() =>
-                              pickImage(fieldName as "image_1" | "image_2")
-                            }
-                          >
-                            <View
-                              style={{ width: 150, height: 150 }}
-                              className="justify-center items-center bg-gray-50 rounded-lg"
-                            >
-                              <Text className="text-gray-500 text-2xl">+</Text>
-                            </View>
-                          </Pressable>
-                        )}
-                      </CardTitle>
-                    </CardHeader>
-                    {watch(fieldName as "image_1" | "image_2")?.uri && (
-                      <Pressable
-                        onPress={() =>
-                          removeImage(fieldName as "image_1" | "image_2")
-                        }
-                        className="absolute top-1 right-1 h-6 w-6 bg-red-500 rounded-full items-center justify-center"
-                      >
-                        <Text className="text-white">×</Text>
-                      </Pressable>
-                    )}
-                  </Card>
-                ))}
-              </View>
-            </View>
-
             <View className="gap-4">
               <Button onPress={getLocation} className="bg-gray-800">
                 <Text className="text-white">Get Coordinates</Text>
@@ -514,24 +505,23 @@ export default function CreatePage() {
         visible={!!previewImage}
         transparent={true}
         onRequestClose={() => setPreviewImage(null)}
+        animationType="fade"
       >
-        <Pressable
-          className="flex-1 bg-black/80 justify-center items-center p-4"
-          onPress={() => setPreviewImage(null)}
-        >
+        <View className="flex-1 bg-black justify-center items-center">
+          <Pressable
+            className="absolute top-0 right-0 bottom-0 left-0"
+            onPress={() => setPreviewImage(null)}
+          />
           {previewImage && (
-            <View
-              style={{ width: 300, height: 300 }}
-              className="bg-white rounded-lg overflow-hidden"
-            >
+            <View className="w-screen h-screen p-4 justify-center items-center">
               <Image
                 source={{ uri: previewImage }}
-                style={{ width: 300, height: 300 }}
+                className="w-full h-full"
                 resizeMode="contain"
               />
             </View>
           )}
-        </Pressable>
+        </View>
       </Modal>
     </>
   );
