@@ -1,36 +1,38 @@
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import { Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "./supabase";
-import { Session } from "@supabase/supabase-js";
+import { Session, User } from "@supabase/supabase-js";
 
 interface SessionState {
   session: Session | null;
   initialized: boolean;
   setSession: (session: Session | null) => void;
   setInitialized: (initialized: boolean) => void;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<boolean>;
+  getUser: () => User | null; // Add this new property
 }
 
-export const useSessionStore = create<SessionState>((set) => ({
+export const useSessionStore = create<SessionState>((set, get) => ({
   session: null,
   initialized: false,
   setSession: (session) => set({ session }),
   setInitialized: (initialized) => set({ initialized }),
   signOut: async () => {
+    console.log("Store: signOut called");
     try {
-      console.log("signing out");
-      //   await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       set({ session: null });
+      console.log("Store: session cleared");
+      return true;
     } catch (error) {
-      console.error("Sign out error:", error);
+      console.error("Store: Sign out error:", error);
       set({ session: null });
+      return false;
     }
   },
+  getUser: () => get().session?.user ?? null, // Add this new getter
 }));
 
-// Initialize session listener
 supabase.auth.onAuthStateChange((event, session) => {
   useSessionStore.getState().setSession(session);
 });

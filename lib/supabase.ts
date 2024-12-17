@@ -7,20 +7,33 @@ const supabaseUrl = "https://irtvirxbotoijoiriihn.supabase.co";
 const supabaseAnonKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlydHZpcnhib3RvaWpvaXJpaWhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNDUxMjcsImV4cCI6MjA0OTgyMTEyN30.j9Hj1lX3AicSEAukJlCYQ_oifhnV1mwxw-_C6HvDsDM";
 
-// Use fake storage only for Expo Go on Android/iOS
-const storage = Platform.select({
-  web: undefined, // Use default storage on web
-  default: {
-    getItem: () => Promise.resolve(null),
-    setItem: () => Promise.resolve(),
-    removeItem: () => Promise.resolve(),
-  },
-});
+class SupabaseStorage {
+  async getItem(key: string) {
+    if (Platform.OS === "web") {
+      if (typeof localStorage === "undefined") {
+        return null;
+      }
+      return localStorage.getItem(key);
+    }
+    return AsyncStorage.getItem(key);
+  }
+  async removeItem(key: string) {
+    if (Platform.OS === "web") {
+      return localStorage.removeItem(key);
+    }
+    return AsyncStorage.removeItem(key);
+  }
+  async setItem(key: string, value: string) {
+    if (Platform.OS === "web") {
+      return localStorage.setItem(key, value);
+    }
+    return AsyncStorage.setItem(key, value);
+  }
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // storage: storage,
-    storage: AsyncStorage,
+    storage: new SupabaseStorage(),
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
